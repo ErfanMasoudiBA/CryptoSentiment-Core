@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import axios from 'axios';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import Sidebar from './Sidebar';
 import SentimentChart from './SentimentChart';
 import NewsTable from './NewsTable';
@@ -26,6 +27,8 @@ interface NewsItem {
   sentiment_score: number;
 }
 
+const PAGE_SIZE = 20;
+
 export default function DashboardContent() {
   const searchParams = useSearchParams();
   const coinFromUrl = searchParams.get('coin') || '';
@@ -38,18 +41,26 @@ export default function DashboardContent() {
   });
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedCoin, setSelectedCoin] = useState<string>(coinFromUrl || 'All');
+  const [currentPage, setCurrentPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchData = useCallback(async (coinQuery: string = '') => {
+  const fetchData = useCallback(async (coinQuery: string = '', page: number = 0, append: boolean = false) => {
     try {
-      setLoading(true);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
       setError(null);
 
       const statsQuery = coinQuery && coinQuery !== 'All' ? `?q=${encodeURIComponent(coinQuery)}` : '';
+      const skip = page * PAGE_SIZE;
       const newsQuery = coinQuery && coinQuery !== 'All' 
-        ? `?q=${encodeURIComponent(coinQuery)}&limit=20`
-        : '?limit=20';
+        ? `?q=${encodeURIComponent(coinQuery)}&skip=${skip}&limit=${PAGE_SIZE}`
+        : `?skip=${skip}&limit=${PAGE_SIZE}`;
       
       // Fetch stats and news in parallel
       const [statsResponse, newsResponse] = await Promise.all([
@@ -58,7 +69,15 @@ export default function DashboardContent() {
       ]);
 
       setStats(statsResponse.data);
-      setNews(newsResponse.data);
+      
+      if (append) {
+        setNews(prev => [...prev, ...newsResponse.data]);
+      } else {
+        setNews(newsResponse.data);
+      }
+      
+      // Check if there are more items
+      setHasMore(newsResponse.data.length === PAGE_SIZE);
     } catch (err) {
       console.error('Error fetching data:', err);
       setError(
@@ -68,21 +87,37 @@ export default function DashboardContent() {
       );
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
     if (coinFromUrl) {
       setSelectedCoin(coinFromUrl);
-      fetchData(coinFromUrl);
+      setCurrentPage(0);
+      fetchData(coinFromUrl, 0, false);
     } else {
-      fetchData('');
+      setCurrentPage(0);
+      fetchData('', 0, false);
     }
   }, [coinFromUrl, fetchData]);
 
   const handleSearch = (query: string) => {
     setSelectedCoin(query || 'All');
-    fetchData(query);
+    setCurrentPage(0);
+    fetchData(query, 0, false);
+  };
+
+  const handleLoadMore = () => {
+    const nextPage = currentPage + 1;
+    setCurrentPage(nextPage);
+    fetchData(selectedCoin === 'All' ? '' : selectedCoin, nextPage, true);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setCurrentPage(newPage);
+    fetchData(selectedCoin === 'All' ? '' : selectedCoin, newPage, false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const getDisplayTitle = () => {
@@ -91,6 +126,8 @@ export default function DashboardContent() {
     }
     return 'Market Sentiment Overview';
   };
+
+  const totalPages = Math.ceil(news.length / PAGE_SIZE) + (hasMore ? 1 : 0);
 
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
@@ -138,6 +175,42 @@ export default function DashboardContent() {
               </div>
               
               <NewsTable news={news} />
+              
+              {/* Pagination Controls */}
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-6">
+                <div className="flex items-center justify-between">
+                  <div className="text-slate-400 text-sm">
+                    Showing {news.length} {news.length === 1 ? 'article' : 'articles'}
+                    {selectedCoin !== 'All' && ` for ${selectedCoin}`}
+                  </div>
+                  
+                  <div className="flex items-center gap-2">
+                    {hasMore && (
+                      <button
+                        onClick={handleLoadMore}
+                        disabled={loadingMore}
+                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center gap-2"
+                      >
+                        {loadingMore ? (
+                          <>
+                            <div className="inline-block animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                            <span>Loading...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>Load More</span>
+                            <ChevronRight size={18} />
+                          </>
+                        )}
+                      </button>
+                    )}
+                    
+                    {!hasMore && news.length > 0 && (
+                      <span className="text-slate-400 text-sm">No more articles to load</span>
+                    )}
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -145,4 +218,3 @@ export default function DashboardContent() {
     </div>
   );
 }
-

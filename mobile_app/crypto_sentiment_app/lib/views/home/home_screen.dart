@@ -91,8 +91,52 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 16),
-                itemCount: newsController.newsList.length,
+                itemCount: newsController.newsList.length + 
+                    (newsController.hasMore.value ? 1 : 0),
                 itemBuilder: (context, index) {
+                  // Load More button at the end
+                  if (index == newsController.newsList.length) {
+                    return Obx(() {
+                      if (newsController.isLoadingMore.value) {
+                        return const Padding(
+                          padding: EdgeInsets.all(16.0),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                            ),
+                          ),
+                        );
+                      }
+                      
+                      return Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: ElevatedButton(
+                          onPressed: newsController.hasMore.value
+                              ? () => newsController.loadMoreNews()
+                              : null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.blue.shade600,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 16,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'بارگذاری بیشتر',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      );
+                    });
+                  }
+                  
                   return NewsCard(news: newsController.newsList[index]);
                 },
               ),
