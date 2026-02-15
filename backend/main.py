@@ -45,8 +45,7 @@ def seed_database(db: Session):
 
     # خواندن فایل
     df = pd.read_csv(csv_path)
-    # برای سبکی دیتابیس، فقط ۵۰۰ خبر اول را برمی‌داریم
-    df = df.head(500)
+    # Loading all rows from the CSV file
 
     news_to_add = []
     for _, row in df.iterrows():

@@ -20,7 +20,7 @@ class CategorySelector extends StatelessWidget {
 
     return Container(
       height: 60,
-      padding: const EdgeInsets.symmetric(vertical: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
       child: ListView.builder(
         scrollDirection: Axis.horizontal,
         itemCount: categories.length,
@@ -35,31 +35,41 @@ class CategorySelector extends StatelessWidget {
                 controller.filterByCoin(category);
               },
               child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 4),
+                margin: const EdgeInsets.symmetric(horizontal: 6),
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
+                  horizontal: 20,
+                  vertical: 10,
                 ),
                 decoration: BoxDecoration(
                   color: isSelected
-                      ? Theme.of(context).primaryColor
-                      : Colors.grey.shade300,
+                      ? Colors.blue.shade600
+                      : const Color(0xFF1E293B), // slate-800
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(
                     color: isSelected
-                        ? Theme.of(context).primaryColor
-                        : Colors.transparent,
-                    width: 2,
+                        ? Colors.blue.shade600
+                        : Colors.grey.shade700,
+                    width: 1.5,
                   ),
+                  boxShadow: isSelected
+                      ? [
+                          BoxShadow(
+                            color: Colors.blue.withOpacity(0.3),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Center(
                   child: Text(
                     category,
                     style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
+                      color: isSelected ? Colors.white : Colors.grey.shade300,
                       fontWeight: isSelected
                           ? FontWeight.bold
-                          : FontWeight.normal,
+                          : FontWeight.w500,
+                      fontSize: 14,
                     ),
                   ),
                 ),

@@ -53,6 +53,9 @@ dependencies:
   # Circular progress indicators
   percent_indicator: ^4.2.3
 
+  # URL launcher for opening web links
+  url_launcher: ^6.3.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

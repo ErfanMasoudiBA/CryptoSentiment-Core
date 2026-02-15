@@ -18,51 +18,56 @@ class SentimentChart extends StatelessWidget {
     final total = positive + negative + neutral;
 
     if (total == 0) {
-      return Card(
-        margin: const EdgeInsets.all(16),
-        child: Padding(
-          padding: const EdgeInsets.all(32),
-          child: Column(
-            children: [
-              const Icon(Icons.pie_chart_outline, size: 48, color: Colors.grey),
-              const SizedBox(height: 16),
-              const Text(
-                'No data available',
-                style: TextStyle(fontSize: 16, color: Colors.grey),
+      return Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          children: [
+            Icon(
+              Icons.pie_chart_outline,
+              size: 48,
+              color: Colors.grey.shade600,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No data available',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey.shade400,
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       );
     }
 
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text(
-              'Sentiment Distribution',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text(
+            'Market Sentiment',
+            style: TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 200,
-              width: 200,
-              child: PieChart(
-                PieChartData(
-                  sectionsSpace: 2,
-                  centerSpaceRadius: 40,
-                  sections: _buildPieChartSections(),
-                ),
+          ),
+          const SizedBox(height: 20),
+          SizedBox(
+            height: 220,
+            width: 220,
+            child: PieChart(
+              PieChartData(
+                sectionsSpace: 3,
+                centerSpaceRadius: 50,
+                sections: _buildPieChartSections(),
               ),
             ),
-            const SizedBox(height: 16),
-            _buildLegend(),
-          ],
-        ),
+          ),
+          const SizedBox(height: 20),
+          _buildLegend(),
+        ],
       ),
     );
   }
@@ -75,12 +80,12 @@ class SentimentChart extends StatelessWidget {
     if (positive > 0) {
       sections.add(
         PieChartSectionData(
-          color: Colors.green,
+          color: Colors.green.shade500,
           value: positive.toDouble(),
           title: '${(positive / total * 100).toStringAsFixed(1)}%',
-          radius: 50,
+          radius: 60,
           titleStyle: const TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -91,12 +96,12 @@ class SentimentChart extends StatelessWidget {
     if (negative > 0) {
       sections.add(
         PieChartSectionData(
-          color: Colors.red,
+          color: Colors.red.shade500,
           value: negative.toDouble(),
           title: '${(negative / total * 100).toStringAsFixed(1)}%',
-          radius: 50,
+          radius: 60,
           titleStyle: const TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -107,12 +112,12 @@ class SentimentChart extends StatelessWidget {
     if (neutral > 0) {
       sections.add(
         PieChartSectionData(
-          color: Colors.grey,
+          color: Colors.grey.shade500,
           value: neutral.toDouble(),
           title: '${(neutral / total * 100).toStringAsFixed(1)}%',
-          radius: 50,
+          radius: 60,
           titleStyle: const TextStyle(
-            fontSize: 12,
+            fontSize: 13,
             fontWeight: FontWeight.bold,
             color: Colors.white,
           ),
@@ -130,26 +135,42 @@ class SentimentChart extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: [
         if (positive > 0)
-          _legendItem('Positive', Colors.green, positive, total),
-        if (negative > 0) _legendItem('Negative', Colors.red, negative, total),
-        if (neutral > 0) _legendItem('Neutral', Colors.grey, neutral, total),
+          _legendItem('Positive', Colors.green.shade500, positive, total),
+        if (negative > 0)
+          _legendItem('Negative', Colors.red.shade500, negative, total),
+        if (neutral > 0)
+          _legendItem('Neutral', Colors.grey.shade500, neutral, total),
       ],
     );
   }
 
   Widget _legendItem(String label, Color color, int count, int total) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    return Column(
       children: [
         Container(
-          width: 12,
-          height: 12,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          width: 16,
+          height: 16,
+          decoration: BoxDecoration(
+            color: color,
+            shape: BoxShape.circle,
+          ),
         ),
-        const SizedBox(width: 4),
+        const SizedBox(height: 4),
         Text(
-          '$label (${(count / total * 100).toStringAsFixed(1)}%)',
-          style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w600,
+            color: Colors.grey.shade300,
+          ),
+        ),
+        Text(
+          '${(count / total * 100).toStringAsFixed(1)}%',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
       ],
     );
