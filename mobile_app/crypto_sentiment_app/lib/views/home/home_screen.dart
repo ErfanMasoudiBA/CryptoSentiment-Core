@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import '../../controllers/news_controller.dart';
 import '../widgets/news_card.dart';
 import '../widgets/sentiment_chart.dart';
+import '../widgets/category_selector.dart';
 
 class HomeScreen extends StatelessWidget {
   final NewsController newsController = Get.put(NewsController());
@@ -33,6 +34,7 @@ class HomeScreen extends StatelessWidget {
               negative: newsController.negativeCount.value,
               neutral: newsController.neutralCount.value,
             ),
+            const CategorySelector(),
             Expanded(
               child: ListView.builder(
                 itemCount: newsController.newsList.length,

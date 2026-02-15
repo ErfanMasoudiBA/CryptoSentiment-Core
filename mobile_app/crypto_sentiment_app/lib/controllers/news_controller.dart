@@ -9,6 +9,7 @@ class NewsController extends GetxController {
   var positiveCount = 0.obs;
   var negativeCount = 0.obs;
   var neutralCount = 0.obs;
+  var selectedCoin = 'All'.obs;
 
   @override
   void onInit() {
@@ -17,13 +18,18 @@ class NewsController extends GetxController {
     fetchStats();
   }
 
-  Future<void> fetchNews() async {
+  Future<void> fetchNews({String? coin}) async {
     try {
       isLoading(true);
 
       // Using 10.0.2.2 for Android emulator to access host machine
+      String url = 'http://10.0.2.2:8000/api/news';
+      if (coin != null && coin != 'All') {
+        url += '?q=$coin';
+      }
+
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/news'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -50,10 +56,15 @@ class NewsController extends GetxController {
     }
   }
 
-  Future<void> fetchStats() async {
+  Future<void> fetchStats({String? coin}) async {
     try {
+      String url = 'http://10.0.2.2:8000/api/stats';
+      if (coin != null && coin != 'All') {
+        url += '?q=$coin';
+      }
+
       final response = await http.get(
-        Uri.parse('http://10.0.2.2:8000/api/stats'),
+        Uri.parse(url),
         headers: {'Content-Type': 'application/json'},
       );
 
@@ -73,5 +84,11 @@ class NewsController extends GetxController {
       // Silently fail for stats - not critical
       print('Stats fetch failed: $e');
     }
+  }
+
+  void filterByCoin(String coin) {
+    selectedCoin.value = coin;
+    fetchNews(coin: coin == 'All' ? null : coin);
+    fetchStats(coin: coin == 'All' ? null : coin);
   }
 }

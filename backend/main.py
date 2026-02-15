@@ -90,17 +90,35 @@ def read_root():
 
 # 1. گرفتن لیست اخبار (با قابلیت صفحه‌بندی)
 @app.get("/api/news")
-def get_news(skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
-    news = db.query(News).offset(skip).limit(limit).all()
+def get_news(skip: int = 0, limit: int = 50, q: str = None, db: Session = Depends(get_db)):
+    query = db.query(News)
+    
+    if q:
+        # Filter by coin name in title or summary
+        query = query.filter(
+            News.title.contains(q) | 
+            News.summary.contains(q)
+        )
+    
+    news = query.offset(skip).limit(limit).all()
     return news
 
 # 2. گرفتن آمار برای نمودارها
 @app.get("/api/stats")
-def get_stats(db: Session = Depends(get_db)):
-    total = db.query(News).count()
-    positive = db.query(News).filter(News.sentiment_label == 'positive').count()
-    negative = db.query(News).filter(News.sentiment_label == 'negative').count()
-    neutral = db.query(News).filter(News.sentiment_label == 'neutral').count()
+def get_stats(q: str = None, db: Session = Depends(get_db)):
+    query = db.query(News)
+    
+    if q:
+        # Filter by coin name in title or summary
+        query = query.filter(
+            News.title.contains(q) | 
+            News.summary.contains(q)
+        )
+    
+    total = query.count()
+    positive = query.filter(News.sentiment_label == 'positive').count()
+    negative = query.filter(News.sentiment_label == 'negative').count()
+    neutral = query.filter(News.sentiment_label == 'neutral').count()
     
     return {
         "total": total,
