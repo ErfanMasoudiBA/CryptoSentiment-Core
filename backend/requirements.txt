@@ -3,3 +3,6 @@ uvicorn
 pandas
 nltk
 sqlalchemy
+transformers
+torch>=2.6
+scipy
