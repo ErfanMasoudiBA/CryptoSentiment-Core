@@ -211,6 +211,11 @@ export default function DashboardContent() {
                   </div>
                 </div>
               </div>
+
+              {/* Footer */}
+              <footer className="pt-8 pb-4 text-center text-slate-500 text-sm">
+                Powered by FinBERT & VADER | © 2024 CryptoSentiment Project
+              </footer>
             </>
           )}
         </div>

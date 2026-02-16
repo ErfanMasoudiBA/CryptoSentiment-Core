@@ -14,13 +14,23 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0F172A), // slate-900
+      backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text(
-          'Crypto Sentiment',
-          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+        title: ShaderMask(
+          blendMode: BlendMode.srcIn,
+          shaderCallback: (bounds) => LinearGradient(
+            colors: [Colors.blue.shade400, Colors.purple.shade400],
+          ).createShader(bounds),
+          child: const Text(
+            'CryptoPulse AI',
+            style: TextStyle(
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+              fontSize: 20,
+            ),
+          ),
         ),
-        backgroundColor: const Color(0xFF1E293B), // slate-800
+        backgroundColor: const Color(0xFF1E293B),
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -51,7 +61,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'No news available',
-                  style: TextStyle(fontSize: 18, color: Colors.grey.shade400),
+                  style: TextStyle(fontSize: 18, color: Colors.grey.shade600),
                 ),
               ],
             ),

@@ -135,9 +135,9 @@ export default function NewsTable({ news }: NewsTableProps) {
                     href={item.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors shadow-md hover:shadow-lg"
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg border-0"
                   >
-                    <span>Read</span>
+                    <span>Read More</span>
                     <ExternalLink size={14} />
                   </a>
                 </td>

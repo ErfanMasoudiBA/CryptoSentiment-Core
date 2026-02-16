@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../models/news_model.dart';
 import '../details/news_detail_screen.dart';
 
@@ -59,9 +60,10 @@ class NewsCard extends StatelessWidget {
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.2),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: Colors.black.withOpacity(0.25),
+              blurRadius: 12,
+              offset: const Offset(0, 6),
+              spreadRadius: 0,
             ),
           ],
         ),
@@ -94,7 +96,7 @@ class NewsCard extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       news.sentimentLabel.toUpperCase(),
-                      style: TextStyle(
+                      style: GoogleFonts.poppins(
                         color: _getSentimentColor(),
                         fontWeight: FontWeight.bold,
                         fontSize: 11,
@@ -110,7 +112,7 @@ class NewsCard extends StatelessWidget {
               // Title
               Text(
                 news.title,
-                style: const TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -124,7 +126,7 @@ class NewsCard extends StatelessWidget {
               // Summary
               Text(
                 news.summary,
-                style: TextStyle(
+                style: GoogleFonts.poppins(
                   fontSize: 14,
                   color: Colors.grey.shade300,
                 ),
@@ -148,30 +150,43 @@ class NewsCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Text(
                         news.source,
-                        style: TextStyle(
+                        style: GoogleFonts.poppins(
                           fontSize: 12,
                           color: Colors.grey.shade400,
                         ),
                       ),
                     ],
                   ),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.withOpacity(0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Text(
-                      '${(news.sentimentScore * 100).toStringAsFixed(1)}%',
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: Colors.blue.shade300,
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.blue.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          '${(news.sentimentScore * 100).toStringAsFixed(1)}%',
+                          style: GoogleFonts.poppins(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.blue.shade300,
+                          ),
+                        ),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () {}, // Placeholder
+                        icon: Icon(Icons.share_outlined, size: 20, color: Colors.grey.shade400),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+                        tooltip: 'Share',
+                      ),
+                    ],
                   ),
                 ],
               ),

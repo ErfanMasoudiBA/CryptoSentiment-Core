@@ -38,12 +38,13 @@ export default function SentimentChart({ positive, negative, neutral, coinName }
   };
 
   return (
-    <div>
+    <div className="flex flex-col items-center justify-center w-full">
       <h2 className="text-xl font-bold text-white mb-6">
         {coinName ? `${coinName} Sentiment` : 'Market Sentiment'}
       </h2>
-      <ResponsiveContainer width="100%" height={300}>
-        <PieChart>
+      <div className="w-full max-w-md flex justify-center">
+        <ResponsiveContainer width="100%" height={300}>
+          <PieChart>
           <Pie
             data={data}
             cx="50%"
@@ -71,9 +72,10 @@ export default function SentimentChart({ positive, negative, neutral, coinName }
             iconType="circle"
           />
         </PieChart>
-      </ResponsiveContainer>
+        </ResponsiveContainer>
+      </div>
       
-      <div className="mt-6 grid grid-cols-3 gap-4">
+      <div className="mt-6 grid grid-cols-3 gap-4 w-full max-w-md">
         <div className="text-center">
           <div className="text-2xl font-bold text-green-400">{positive}</div>
           <div className="text-sm text-slate-400">Positive</div>
