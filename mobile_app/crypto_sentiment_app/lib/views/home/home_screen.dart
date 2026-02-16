@@ -4,6 +4,7 @@ import '../../controllers/news_controller.dart';
 import '../widgets/news_card.dart';
 import '../widgets/sentiment_chart.dart';
 import '../widgets/category_selector.dart';
+import '../playground/playground_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final NewsController newsController = Get.put(NewsController());
@@ -25,6 +26,11 @@ class HomeScreen extends StatelessWidget {
         backgroundColor: const Color(0xFF1E293B), // slate-800
         elevation: 0,
         iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () => Get.to(() => PlaygroundScreen()),
+        backgroundColor: Colors.blue.shade600,
+        child: const Icon(Icons.science, color: Colors.white),
       ),
       body: Obx(() {
         if (newsController.isLoading.value) {
