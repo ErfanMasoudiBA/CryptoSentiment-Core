@@ -18,10 +18,7 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text(
           'Crypto Sentiment',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
+          style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
         ),
         backgroundColor: const Color(0xFF1E293B), // slate-800
         elevation: 0,
@@ -54,10 +51,7 @@ class HomeScreen extends StatelessWidget {
                 const SizedBox(height: 16),
                 Text(
                   'No news available',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: Colors.grey.shade400,
-                  ),
+                  style: TextStyle(fontSize: 18, color: Colors.grey.shade400),
                 ),
               ],
             ),
@@ -97,7 +91,8 @@ class HomeScreen extends StatelessWidget {
             Expanded(
               child: ListView.builder(
                 padding: const EdgeInsets.only(bottom: 16),
-                itemCount: newsController.newsList.length + 
+                itemCount:
+                    newsController.newsList.length +
                     (newsController.hasMore.value ? 1 : 0),
                 itemBuilder: (context, index) {
                   // Load More button at the end
@@ -108,12 +103,14 @@ class HomeScreen extends StatelessWidget {
                           padding: EdgeInsets.all(16.0),
                           child: Center(
                             child: CircularProgressIndicator(
-                              valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Colors.blue,
+                              ),
                             ),
                           ),
                         );
                       }
-                      
+
                       return Padding(
                         padding: const EdgeInsets.all(16.0),
                         child: ElevatedButton(
@@ -132,7 +129,7 @@ class HomeScreen extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            'بارگذاری بیشتر',
+                            'load more',
                             style: TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -142,7 +139,7 @@ class HomeScreen extends StatelessWidget {
                       );
                     });
                   }
-                  
+
                   return NewsCard(news: newsController.newsList[index]);
                 },
               ),
