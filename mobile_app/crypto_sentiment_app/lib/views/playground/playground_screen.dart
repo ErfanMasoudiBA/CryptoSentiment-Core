@@ -176,7 +176,82 @@ class PlaygroundScreen extends StatelessWidget {
                 ),
               );
             }),
+            const SizedBox(height: 24),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: const Color(0xFF1E293B).withOpacity(0.5),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(color: Colors.grey.shade800.withOpacity(0.5)),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Sample Scenarios',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Tap to fill the text field with sample text.',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade400,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _buildSampleButton(
+                        'Supply Shock',
+                        'The sudden supply shock caused the price to stabilize at a higher level.',
+                      ),
+                      _buildSampleButton(
+                        'Regulations',
+                        'The strict regulations were finally lifted, opening doors for massive adoption.',
+                      ),
+                      _buildSampleButton(
+                        'Insured Hack',
+                        'The hack resulted in zero loss of user funds due to insurance coverage.',
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSampleButton(String label, String text) {
+    return ElevatedButton(
+      onPressed: () {
+        textController.text = text;
+        aiController.clearResult();
+      },
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF1E293B),
+        foregroundColor: Colors.grey.shade300,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: BorderSide(color: Colors.grey.shade700),
+        ),
+        elevation: 0,
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 14,
+          fontWeight: FontWeight.w500,
         ),
       ),
     );

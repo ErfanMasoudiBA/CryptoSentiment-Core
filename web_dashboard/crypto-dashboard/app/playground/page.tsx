@@ -14,9 +14,9 @@ interface AnalyzeResult {
 }
 
 const SAMPLE_SCENARIOS = [
-  { label: 'Bitcoin skyrocketed...', text: 'Bitcoin skyrocketed to a new all-time high as institutional investors pour in billions.' },
-  { label: 'Market crashed despite volume...', text: 'Market crashed despite volume surge; analysts warn of prolonged bearish sentiment.' },
-  { label: 'Regulations lifted...', text: 'Regulations lifted on crypto exchanges in key markets, boosting investor confidence.' },
+  { label: 'Supply Shock', text: 'The sudden supply shock caused the price to stabilize at a higher level.' },
+  { label: 'Regulations', text: 'The strict regulations were finally lifted, opening doors for massive adoption.' },
+  { label: 'Insured Hack', text: 'The hack resulted in zero loss of user funds due to insurance coverage.' },
 ];
 
 export default function PlaygroundPage() {
