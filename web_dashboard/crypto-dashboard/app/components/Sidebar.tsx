@@ -1,12 +1,13 @@
 "use client";
 
-import { LayoutDashboard, TrendingUp, Settings } from "lucide-react";
+import { LayoutDashboard, TrendingUp, Settings, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const menuItems = [
   { name: "Dashboard", icon: LayoutDashboard, href: "/" },
   { name: "Market", icon: TrendingUp, href: "/market" },
+  { name: "AI Playground", icon: Sparkles, href: "/playground" },
   { name: "Settings", icon: Settings, href: "/settings" },
 ];
 
