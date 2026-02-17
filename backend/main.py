@@ -5,12 +5,58 @@ from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
-from database import engine, SessionLocal, Base
+from database import engine, SessionLocal, Base, LiveNews
 from models import News
 from ai_engine import CryptoAI
+from sqlalchemy import text
 
 # ساخت جداول دیتابیس اگر وجود ندارند
+# Update existing tables with new columns if needed
 Base.metadata.create_all(bind=engine)
+
+# Add new columns if they don't exist
+try:
+    with engine.connect() as conn:
+        # Check if VADER and FinBERT columns exist in news table, if not create them
+        try:
+            conn.execute(text("ALTER TABLE news ADD COLUMN vader_label TEXT DEFAULT 'neutral'"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE news ADD COLUMN vader_score REAL DEFAULT 0.0"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE news ADD COLUMN finbert_label TEXT DEFAULT 'neutral'"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE news ADD COLUMN finbert_score REAL DEFAULT 0.0"))
+        except:
+            pass  # Column already exists
+            
+        # Check if VADER and FinBERT columns exist in live_news table, if not create them
+        try:
+            conn.execute(text("ALTER TABLE live_news ADD COLUMN vader_label TEXT DEFAULT 'neutral'"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE live_news ADD COLUMN vader_score REAL DEFAULT 0.0"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE live_news ADD COLUMN finbert_label TEXT DEFAULT 'neutral'"))
+        except:
+            pass  # Column already exists
+        try:
+            conn.execute(text("ALTER TABLE live_news ADD COLUMN finbert_score REAL DEFAULT 0.0"))
+        except:
+            pass  # Column already exists
+            
+        conn.commit()
+except Exception as e:
+    # Handle any other database errors
+    print(f"Schema update completed or error: {e}")
 
 app = FastAPI(title="CryptoSentiment Core")
 
@@ -37,9 +83,15 @@ def get_db():
 # --- تابع کلیدی: انتقال دیتا از CSV به دیتابیس ---
 def seed_database(db: Session):
     # چک می‌کنیم اگر دیتابیس خالی است، پرش کنیم
-    if db.query(News).count() > 0:
-        print("Database already has data. Skipping seed.")
-        return
+    try:
+        if db.query(News).count() > 0:
+            print("Database already has data. Skipping seed.")
+            return
+    except Exception as e:
+        print(f"Error checking database: {e}")
+        # If there's an error (like missing columns), we'll continue with seeding
+        # The create_all will handle schema updates
+        pass
 
     print("Seeding database from CSV...")
     csv_path = os.path.join("data", "cryptonews.csv")
@@ -96,7 +148,7 @@ def read_root():
 
 # 1. گرفتن لیست اخبار (با قابلیت صفحه‌بندی)
 @app.get("/api/news")
-def get_news(skip: int = 0, limit: int = 50, q: str = None, db: Session = Depends(get_db)):
+def get_news(skip: int = 0, limit: int = 50, q: str = None, start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
     query = db.query(News)
     
     if q:
@@ -105,6 +157,12 @@ def get_news(skip: int = 0, limit: int = 50, q: str = None, db: Session = Depend
             News.title.contains(q) | 
             News.summary.contains(q)
         )
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(News.published_date >= start_date)
+    if end_date:
+        query = query.filter(News.published_date <= end_date)
     
     news = query.offset(skip).limit(limit).all()
     return news
@@ -125,6 +183,66 @@ def get_stats(q: str = None, db: Session = Depends(get_db)):
     positive = query.filter(News.sentiment_label == 'positive').count()
     negative = query.filter(News.sentiment_label == 'negative').count()
     neutral = query.filter(News.sentiment_label == 'neutral').count()
+    
+    return {
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    }
+
+# 2a. گرفتن آمار VADER
+@app.get("/api/vader_stats")
+def get_vader_stats(q: str = None, start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+    query = db.query(News)
+    
+    if q:
+        # Filter by coin name in title or summary
+        query = query.filter(
+            News.title.contains(q) | 
+            News.summary.contains(q)
+        )
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(News.published_date >= start_date)
+    if end_date:
+        query = query.filter(News.published_date <= end_date)
+    
+    total = query.count()
+    positive = query.filter(News.vader_label == 'positive').count()
+    negative = query.filter(News.vader_label == 'negative').count()
+    neutral = query.filter(News.vader_label == 'neutral').count()
+    
+    return {
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    }
+
+# 2b. گرفتن آمار FinBERT
+@app.get("/api/finbert_stats")
+def get_finbert_stats(q: str = None, start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+    query = db.query(News)
+    
+    if q:
+        # Filter by coin name in title or summary
+        query = query.filter(
+            News.title.contains(q) | 
+            News.summary.contains(q)
+        )
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(News.published_date >= start_date)
+    if end_date:
+        query = query.filter(News.published_date <= end_date)
+    
+    total = query.count()
+    positive = query.filter(News.finbert_label == 'positive').count()
+    negative = query.filter(News.finbert_label == 'negative').count()
+    neutral = query.filter(News.finbert_label == 'neutral').count()
     
     return {
         "total": total,
@@ -183,3 +301,69 @@ def reanalyze_db(body: ReanalyzeDbRequest, db: Session = Depends(get_db)):
         row.sentiment_score = float(result.get("score", 0.0))
     db.commit()
     return {"status": "success", "updated_count": len(rows)}
+
+# اندپوینت جدید برای گرفتن لیست اخبار زنده
+@app.get("/api/live_news")
+def get_live_news_list(start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+    query = db.query(LiveNews)
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(LiveNews.date >= start_date)
+    if end_date:
+        query = query.filter(LiveNews.date <= end_date)
+    
+    # جدیدترین‌ها اول بیان (desc)
+    news = query.order_by(LiveNews.id.desc()).limit(20).all()
+    return news
+
+# API endpoints for VADER and FinBERT stats for live news
+@app.get("/api/live_vader_stats")
+def get_live_vader_stats(start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+    query = db.query(LiveNews)
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(LiveNews.date >= start_date)
+    if end_date:
+        query = query.filter(LiveNews.date <= end_date)
+    
+    total = query.count()
+    positive = query.filter(LiveNews.vader_label == 'positive').count()
+    negative = query.filter(LiveNews.vader_label == 'negative').count()
+    neutral = query.filter(LiveNews.vader_label == 'neutral').count()
+    
+    return {
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    }
+
+@app.get("/api/live_finbert_stats")
+def get_live_finbert_stats(start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+    query = db.query(LiveNews)
+    
+    # Filter by date range if provided
+    if start_date:
+        query = query.filter(LiveNews.date >= start_date)
+    if end_date:
+        query = query.filter(LiveNews.date <= end_date)
+    
+    total = query.count()
+    positive = query.filter(LiveNews.finbert_label == 'positive').count()
+    negative = query.filter(LiveNews.finbert_label == 'negative').count()
+    neutral = query.filter(LiveNews.finbert_label == 'neutral').count()
+    
+    return {
+        "total": total,
+        "positive": positive,
+        "negative": negative,
+        "neutral": neutral
+    }
+
+@app.post("/api/fetch_live_news")
+def trigger_live_news_fetch(limit: int = 5):
+    from news_fetcher import fetch_and_analyze_latest_news
+    result = fetch_and_analyze_latest_news(limit=limit)
+    return result

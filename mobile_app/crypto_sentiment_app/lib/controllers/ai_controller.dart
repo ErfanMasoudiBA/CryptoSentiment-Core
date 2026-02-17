@@ -1,13 +1,14 @@
 import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import '../constants/api_constants.dart';
 
 class AIController extends GetxController {
   var resultLabel = ''.obs;
   var resultScore = 0.0.obs;
   var isLoading = false.obs;
 
-  static const String _baseUrl = 'http://10.0.2.2:8000';
+  static const String _baseUrl = ApiConstants.baseUrl;
 
   Future<void> analyzeText(String text, String model) async {
     if (text.trim().isEmpty) {
@@ -27,10 +28,7 @@ class AIController extends GetxController {
       final response = await http.post(
         Uri.parse('$_baseUrl/api/analyze_text'),
         headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'text': text.trim(),
-          'model': model,
-        }),
+        body: json.encode({'text': text.trim(), 'model': model}),
       );
 
       if (response.statusCode == 200) {

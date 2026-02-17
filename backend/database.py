@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, Column, Integer, String, Float
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -21,3 +21,24 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+class LiveNews(Base):
+    __tablename__ = "live_news"  # اسم جدول جدید در دیتابیس
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True)
+    text = Column(String)
+    summary = Column(String)
+    url = Column(String)
+    source = Column(String)
+    date = Column(String)  # Store as ISO format datetime string in UTC
+    sentiment = Column(String)       # جیسون خام
+    sentiment_label = Column(String) # لیبل نهایی (Positive/Negative)
+    sentiment_score = Column(Float)  # نمره اطمینان
+    # Separate VADER sentiment fields
+    vader_label = Column(String, nullable=True)
+    vader_score = Column(Float, nullable=True)
+    # Separate FinBERT sentiment fields
+    finbert_label = Column(String, nullable=True)
+    finbert_score = Column(Float, nullable=True)

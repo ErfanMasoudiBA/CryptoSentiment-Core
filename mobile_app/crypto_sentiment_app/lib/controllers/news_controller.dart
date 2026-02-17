@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/news_model.dart';
+import '../constants/api_constants.dart';
 
 class NewsController extends GetxController {
   var newsList = <NewsModel>[].obs;
@@ -12,7 +13,7 @@ class NewsController extends GetxController {
   var negativeCount = 0.obs;
   var neutralCount = 0.obs;
   var selectedCoin = 'All'.obs;
-  
+
   static const int _pageSize = 20;
   int _currentPage = 0;
 
@@ -35,16 +36,16 @@ class NewsController extends GetxController {
       }
 
       // Using 10.0.2.2 for Android emulator to access host machine
-      String url = 'http://10.0.2.2:8000/api/news';
+      String url = '${ApiConstants.baseUrl}/api/news';
       final skip = _currentPage * _pageSize;
-      
+
       final queryParams = <String>[];
       if (coin != null && coin != 'All') {
         queryParams.add('q=${Uri.encodeComponent(coin)}');
       }
       queryParams.add('skip=$skip');
       queryParams.add('limit=$_pageSize');
-      
+
       if (queryParams.isNotEmpty) {
         url += '?${queryParams.join('&')}';
       }
@@ -59,13 +60,13 @@ class NewsController extends GetxController {
         final newItems = jsonData
             .map((item) => NewsModel.fromJson(item))
             .toList();
-        
+
         if (loadMore) {
           newsList.addAll(newItems);
         } else {
           newsList.value = newItems;
         }
-        
+
         // Check if there are more items
         if (newItems.length < _pageSize) {
           hasMore(false);
@@ -102,7 +103,7 @@ class NewsController extends GetxController {
 
   Future<void> fetchStats({String? coin}) async {
     try {
-      String url = 'http://10.0.2.2:8000/api/stats';
+      String url = '${ApiConstants.baseUrl}/api/stats';
       if (coin != null && coin != 'All') {
         url += '?q=${Uri.encodeComponent(coin)}';
       }

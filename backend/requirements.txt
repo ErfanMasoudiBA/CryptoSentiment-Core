@@ -6,3 +6,7 @@ sqlalchemy
 transformers
 torch>=2.6
 scipy
+requests
+feedparser
+beautifulsoup4
+lxml
