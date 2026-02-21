@@ -28,8 +28,7 @@ export default function LivePage() {
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [newsCount, setNewsCount] = useState<number>(20); // Default to 20 news items
   const [filteredNews, setFilteredNews] = useState<LiveNewsItem[]>([]);
 
   // Fetch live news on component mount
@@ -37,36 +36,22 @@ export default function LivePage() {
     fetchLiveNews();
   }, []);
 
-  // Apply date filters when startDate or endDate changes
+  // Update filtered news when news changes
   useEffect(() => {
-    if (news.length > 0) {
-      let filtered = [...news];
-
-      if (startDate) {
-        filtered = filtered.filter(
-          (item) => new Date(item.date) >= new Date(startDate)
-        );
-      }
-
-      if (endDate) {
-        filtered = filtered.filter(
-          (item) => new Date(item.date) <= new Date(endDate)
-        );
-      }
-
-      setFilteredNews(filtered);
-    }
-  }, [startDate, endDate, news]);
+    setFilteredNews([...news]);
+  }, [news]);
 
   const fetchLiveNews = async () => {
     try {
       setLoading(true);
       setError(null);
-      const response = await axios.get<LiveNewsItem[]>(
-        "http://127.0.0.1:8000/api/live_news"
-      );
+
+      // Build URL with news count limit
+      const url = `http://127.0.0.1:8000/api/live_news?limit=${newsCount}`;
+
+      const response = await axios.get<LiveNewsItem[]>(url);
       setNews(response.data);
-      setFilteredNews(response.data); // Initially show all news
+      // The filtered news will be set by the useEffect when news changes
     } catch (err) {
       console.error("Error fetching live news:", err);
       setError(
@@ -89,7 +74,7 @@ export default function LivePage() {
         params: { limit: 5 },
       });
 
-      // Refresh the news after sync completes
+      // After sync, refresh the news with current date filters
       await fetchLiveNews();
     } catch (err) {
       console.error("Error syncing live news:", err);
@@ -208,73 +193,56 @@ export default function LivePage() {
     <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <Sidebar />
 
-      <main className="flex-1 p-8">
+      <main className="flex-1 p-4 md:p-6 lg:p-8">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header with date filters */}
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="relative">
-                <Radio className="text-red-500 animate-pulse" size={28} />
+                <Radio className="text-red-500 animate-pulse" size={24} />
                 <div className="absolute top-0 right-0 w-2 h-2 bg-red-500 rounded-full animate-ping"></div>
               </div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
+              <h1 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-red-400 to-orange-400 bg-clip-text text-transparent">
                 Live Market Pulse
               </h1>
             </div>
 
-            <div className="flex items-center gap-4">
-              {/* Date Range Filter */}
-              <div className="flex items-center gap-2">
-                <Calendar size={20} className="text-blue-400" />
-                <div className="flex gap-2">
-                  <div>
-                    <label htmlFor="start-date" className="sr-only">
-                      Start Date
-                    </label>
-                    <input
-                      id="start-date"
-                      type="date"
-                      value={startDate}
-                      onChange={(e) => setStartDate(e.target.value)}
-                      className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                  <span className="text-slate-400 self-center">to</span>
-                  <div>
-                    <label htmlFor="end-date" className="sr-only">
-                      End Date
-                    </label>
-                    <input
-                      id="end-date"
-                      type="date"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                  </div>
-                </div>
-                <button
-                  onClick={handleDateFilter}
-                  className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto">
+              {/* News Count Selector */}
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <label
+                  htmlFor="news-count"
+                  className="text-sm text-slate-300 whitespace-nowrap"
                 >
-                  Filter
-                </button>
+                  Show:
+                </label>
+                <select
+                  id="news-count"
+                  value={newsCount}
+                  onChange={(e) => setNewsCount(Number(e.target.value))}
+                  className="bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 w-full sm:w-auto touch-target"
+                >
+                  <option value={10}>10 items</option>
+                  <option value={20}>20 items</option>
+                  <option value={50}>50 items</option>
+                  <option value={100}>100 items</option>
+                </select>
               </div>
 
               <button
                 onClick={handleSyncNews}
                 disabled={syncing}
-                className="px-6 py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 disabled:from-slate-600 disabled:to-slate-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center gap-2"
+                className="w-full sm:w-auto px-4 py-2 md:px-6 md:py-3 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 disabled:from-slate-600 disabled:to-slate-600 text-white font-medium rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl flex items-center justify-center gap-2 touch-target"
               >
                 {syncing ? (
                   <>
                     <RefreshCw className="animate-spin" size={20} />
-                    Syncing...
+                    <span>Syncing...</span>
                   </>
                 ) : (
                   <>
                     <RefreshCw size={20} />
-                    Sync Latest News
+                    <span>Sync Latest News</span>
                   </>
                 )}
               </button>
@@ -283,12 +251,12 @@ export default function LivePage() {
 
           {/* Market Sentiment Analysis */}
           {!loading && (
-            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-6">
-              <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+            <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-4 md:p-6">
+              <h2 className="text-lg md:text-xl font-bold text-white mb-4 flex items-center gap-2">
                 <Radio size={20} className="text-red-500" />
-                Live Market Sentiment Analysis
+                Analysis of {filteredNews.length} Most Recent News Items
               </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="flex flex-col items-center justify-center">
                   <div className="w-full max-w-md flex justify-center">
                     <SentimentChart
@@ -315,7 +283,7 @@ export default function LivePage() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-6 shadow-lg">
+            <div className="bg-red-500/10 border border-red-500/50 rounded-xl p-4 md:p-6 shadow-lg">
               <h3 className="text-red-400 font-semibold mb-2">Error</h3>
               <p className="text-red-300">{error}</p>
               <p className="text-red-300/70 text-sm mt-2">
@@ -327,8 +295,8 @@ export default function LivePage() {
 
           {/* Loading State */}
           {loading && !syncing && (
-            <div className="flex items-center justify-center py-20">
-              <div className="text-center">
+            <div className="flex items-center justify-center py-16 md:py-20">
+              <div className="text-center max-w-sm w-full">
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-slate-600 border-t-red-500 mb-4"></div>
                 <p className="text-slate-400">Loading live market data...</p>
               </div>
@@ -337,36 +305,36 @@ export default function LivePage() {
 
           {/* News Grid */}
           {!loading && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {filteredNews.length === 0 ? (
-                <div className="col-span-full text-center py-12">
+                <div className="col-span-full text-center py-12 px-4">
                   <div className="mx-auto w-16 h-16 bg-slate-800 rounded-full flex items-center justify-center mb-4">
                     <Radio className="text-slate-600" size={32} />
                   </div>
                   <h3 className="text-xl font-semibold text-slate-400 mb-2">
                     {news.length === 0
                       ? "No live news yet"
-                      : "No news in selected date range"}
+                      : "No news to display"}
                   </h3>
-                  <p className="text-slate-500 mb-4">
+                  <p className="text-slate-500 mb-6">
                     {news.length === 0
                       ? 'Click "Sync Latest News" to fetch the latest cryptocurrency news'
-                      : "Try adjusting the date range to see more news"}
+                      : "Try syncing to get more news"}
                   </p>
                   <button
                     onClick={handleSyncNews}
                     disabled={syncing}
-                    className="px-4 py-2 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-2 mx-auto"
+                    className="w-full sm:w-auto px-6 py-3 bg-slate-700 hover:bg-slate-600 disabled:opacity-50 text-white rounded-lg transition-all-fast flex items-center justify-center gap-2 mx-auto touch-target"
                   >
                     {syncing ? (
                       <>
                         <RefreshCw className="animate-spin" size={16} />
-                        Syncing...
+                        <span>Syncing...</span>
                       </>
                     ) : (
                       <>
                         <RefreshCw size={16} />
-                        Fetch News
+                        <span>Fetch News</span>
                       </>
                     )}
                   </button>

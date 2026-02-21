@@ -9,8 +9,7 @@ class LiveNewsController extends GetxController {
   var news = <LiveNewsModel>[].obs;
   var isLoading = false.obs;
   var isSyncing = false.obs;
-  var startDate = "".obs;
-  var endDate = "".obs;
+  var newsLimit = 20.obs; // Default to 20 news items
 
   // VADER sentiment stats
   var vaderPositiveCount = 0.obs;
@@ -32,20 +31,9 @@ class LiveNewsController extends GetxController {
     try {
       isLoading.value = true;
 
-      // Build the URL with date filters if provided
-      String url = '${ApiConstants.baseUrl}/api/live_news';
-      List<String> params = [];
-
-      if (startDate.value.isNotEmpty) {
-        params.add('start_date=${Uri.encodeComponent(startDate.value)}');
-      }
-      if (endDate.value.isNotEmpty) {
-        params.add('end_date=${Uri.encodeComponent(endDate.value)}');
-      }
-
-      if (params.isNotEmpty) {
-        url += '?${params.join('&')}';
-      }
+      // Build the URL with news limit
+      String url =
+          '${ApiConstants.baseUrl}/api/live_news?limit=${newsLimit.value}';
 
       final response = await http.get(Uri.parse(url));
 
@@ -56,8 +44,8 @@ class LiveNewsController extends GetxController {
             .toList();
         news.assignAll(newItems);
 
-        // Update sentiment stats
-        _updateSentimentStats(newItems);
+        // Update sentiment stats based on ALL current news
+        _updateSentimentStats(news); // Recalculate stats for the entire list
       }
     } catch (e) {
       print('Error fetching live news: $e');
@@ -97,6 +85,7 @@ class LiveNewsController extends GetxController {
       }
     }
 
+    // Update observables to trigger UI updates
     vaderPositiveCount.value = vaderPos;
     vaderNegativeCount.value = vaderNeg;
     vaderNeutralCount.value = vaderNeut;
@@ -121,10 +110,9 @@ class LiveNewsController extends GetxController {
     }
   }
 
-  void setDateRange(String start, String end) {
-    startDate.value = start;
-    endDate.value = end;
-    fetchLiveNews(); // Refresh news with new date range
+  void setNewsLimit(int limit) {
+    newsLimit.value = limit;
+    fetchLiveNews(); // Refresh news with new limit
   }
 
   Future<void> openUrl(String url) async {

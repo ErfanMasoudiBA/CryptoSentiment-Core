@@ -157,13 +157,15 @@ def get_news(skip: int = 0, limit: int = 50, q: str = None, start_date: str = No
             News.title.contains(q) | 
             News.summary.contains(q)
         )
-    
+        
     # Filter by date range if provided
     if start_date:
-        query = query.filter(News.published_date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(News.published_date <= end_date)
-    
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date <= f"{end_date} 23:59:59")
+        
     news = query.offset(skip).limit(limit).all()
     return news
 
@@ -202,13 +204,15 @@ def get_vader_stats(q: str = None, start_date: str = None, end_date: str = None,
             News.title.contains(q) | 
             News.summary.contains(q)
         )
-    
+        
     # Filter by date range if provided
     if start_date:
-        query = query.filter(News.published_date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(News.published_date <= end_date)
-    
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date <= f"{end_date} 23:59:59")
+        
     total = query.count()
     positive = query.filter(News.vader_label == 'positive').count()
     negative = query.filter(News.vader_label == 'negative').count()
@@ -232,13 +236,15 @@ def get_finbert_stats(q: str = None, start_date: str = None, end_date: str = Non
             News.title.contains(q) | 
             News.summary.contains(q)
         )
-    
+        
     # Filter by date range if provided
     if start_date:
-        query = query.filter(News.published_date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(News.published_date <= end_date)
-    
+        # Convert to datetime format for proper comparison
+        query = query.filter(News.published_date <= f"{end_date} 23:59:59")
+        
     total = query.count()
     positive = query.filter(News.finbert_label == 'positive').count()
     negative = query.filter(News.finbert_label == 'negative').count()
@@ -304,17 +310,19 @@ def reanalyze_db(body: ReanalyzeDbRequest, db: Session = Depends(get_db)):
 
 # اندپوینت جدید برای گرفتن لیست اخبار زنده
 @app.get("/api/live_news")
-def get_live_news_list(start_date: str = None, end_date: str = None, db: Session = Depends(get_db)):
+def get_live_news_list(start_date: str = None, end_date: str = None, limit: int = 20, db: Session = Depends(get_db)):
     query = db.query(LiveNews)
     
     # Filter by date range if provided
     if start_date:
-        query = query.filter(LiveNews.date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(LiveNews.date <= end_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date <= f"{end_date} 23:59:59")
     
     # جدیدترین‌ها اول بیان (desc)
-    news = query.order_by(LiveNews.id.desc()).limit(20).all()
+    news = query.order_by(LiveNews.id.desc()).limit(limit).all()
     return news
 
 # API endpoints for VADER and FinBERT stats for live news
@@ -324,10 +332,12 @@ def get_live_vader_stats(start_date: str = None, end_date: str = None, db: Sessi
     
     # Filter by date range if provided
     if start_date:
-        query = query.filter(LiveNews.date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(LiveNews.date <= end_date)
-    
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date <= f"{end_date} 23:59:59")
+        
     total = query.count()
     positive = query.filter(LiveNews.vader_label == 'positive').count()
     negative = query.filter(LiveNews.vader_label == 'negative').count()
@@ -346,10 +356,12 @@ def get_live_finbert_stats(start_date: str = None, end_date: str = None, db: Ses
     
     # Filter by date range if provided
     if start_date:
-        query = query.filter(LiveNews.date >= start_date)
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date >= f"{start_date} 00:00:00")
     if end_date:
-        query = query.filter(LiveNews.date <= end_date)
-    
+        # Convert to datetime format for proper comparison
+        query = query.filter(LiveNews.date <= f"{end_date} 23:59:59")
+        
     total = query.count()
     positive = query.filter(LiveNews.finbert_label == 'positive').count()
     negative = query.filter(LiveNews.finbert_label == 'negative').count()

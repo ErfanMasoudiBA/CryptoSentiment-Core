@@ -19,11 +19,18 @@ class LiveNewsScreen extends StatelessWidget {
           ],
         ),
         actions: [
-          IconButton(
-            icon: Icon(Icons.calendar_today),
-            onPressed: () {
-              _showDateRangePicker(context);
+          // Dropdown menu for selecting news count
+          PopupMenuButton<int>(
+            icon: Icon(Icons.list),
+            onSelected: (int count) {
+              controller.setNewsLimit(count);
             },
+            itemBuilder: (BuildContext context) => <PopupMenuEntry<int>>[
+              PopupMenuItem<int>(value: 10, child: Text('Show 10 items')),
+              PopupMenuItem<int>(value: 20, child: Text('Show 20 items')),
+              PopupMenuItem<int>(value: 50, child: Text('Show 50 items')),
+              PopupMenuItem<int>(value: 100, child: Text('Show 100 items')),
+            ],
           ),
           IconButton(
             icon: Obx(
@@ -32,14 +39,14 @@ class LiveNewsScreen extends StatelessWidget {
                   : Icon(Icons.refresh),
             ),
             onPressed: () {
-              controller.fetchLiveNews();
+              controller.fetchLiveNews(); // Fetch news with current limit
             },
           ),
         ],
       ),
       body: Column(
         children: [
-          // Market Sentiment Analysis Charts
+          // Market Sentiment Analysis Charts - Updated to ensure they refresh properly
           Container(
             height: 350, // Increased height to accommodate everything
             padding: EdgeInsets.all(16),
@@ -49,12 +56,14 @@ class LiveNewsScreen extends StatelessWidget {
                 padding: EdgeInsets.all(12),
                 child: Column(
                   children: [
-                    Text(
-                      'Live Market Sentiment Analysis',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
+                    Obx(
+                      () => Text(
+                        'Analysis of ${controller.news.length} Most Recent News Items',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
                     SizedBox(height: 12),
@@ -75,20 +84,24 @@ class LiveNewsScreen extends StatelessWidget {
                                 ),
                                 SizedBox(height: 8),
                                 Expanded(
-                                  child: _buildPieChart(
-                                    controller.finbertPositiveCount.value,
-                                    controller.finbertNegativeCount.value,
-                                    controller.finbertNeutralCount.value,
-                                    Colors.green,
-                                    Colors.red,
-                                    Colors.grey,
+                                  child: Obx(
+                                    () => _buildPieChart(
+                                      controller.finbertPositiveCount.value,
+                                      controller.finbertNegativeCount.value,
+                                      controller.finbertNeutralCount.value,
+                                      Colors.green,
+                                      Colors.red,
+                                      Colors.grey,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(height: 8),
-                                _buildLegendRow(
-                                  controller.finbertPositiveCount.value,
-                                  controller.finbertNegativeCount.value,
-                                  controller.finbertNeutralCount.value,
+                                Obx(
+                                  () => _buildLegendRow(
+                                    controller.finbertPositiveCount.value,
+                                    controller.finbertNegativeCount.value,
+                                    controller.finbertNeutralCount.value,
+                                  ),
                                 ),
                               ],
                             ),
@@ -110,20 +123,24 @@ class LiveNewsScreen extends StatelessWidget {
                                 ),
                                 SizedBox(height: 8),
                                 Expanded(
-                                  child: _buildPieChart(
-                                    controller.vaderPositiveCount.value,
-                                    controller.vaderNegativeCount.value,
-                                    controller.vaderNeutralCount.value,
-                                    Colors.green,
-                                    Colors.red,
-                                    Colors.grey,
+                                  child: Obx(
+                                    () => _buildPieChart(
+                                      controller.vaderPositiveCount.value,
+                                      controller.vaderNegativeCount.value,
+                                      controller.vaderNeutralCount.value,
+                                      Colors.green,
+                                      Colors.red,
+                                      Colors.grey,
+                                    ),
                                   ),
                                 ),
                                 SizedBox(height: 8),
-                                _buildLegendRow(
-                                  controller.vaderPositiveCount.value,
-                                  controller.vaderNegativeCount.value,
-                                  controller.vaderNeutralCount.value,
+                                Obx(
+                                  () => _buildLegendRow(
+                                    controller.vaderPositiveCount.value,
+                                    controller.vaderNegativeCount.value,
+                                    controller.vaderNeutralCount.value,
+                                  ),
                                 ),
                               ],
                             ),
@@ -137,13 +154,17 @@ class LiveNewsScreen extends StatelessWidget {
             ),
           ),
 
-          // News List
+          // News List with automatic updates
           Expanded(
             child: Obx(() {
               if (controller.isLoading.isTrue) {
                 return Center(child: CircularProgressIndicator());
               }
-              if (controller.news.isEmpty) {
+
+              // Use the reactive news list directly
+              List<LiveNewsModel> newsList = controller.news;
+
+              if (newsList.isEmpty) {
                 return Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -151,16 +172,12 @@ class LiveNewsScreen extends StatelessWidget {
                       Icon(Icons.radio, size: 64, color: Colors.grey[600]),
                       SizedBox(height: 16),
                       Text(
-                        controller.news.isEmpty
-                            ? 'No live news yet'
-                            : 'No news in selected date range',
+                        'No live news yet',
                         style: TextStyle(fontSize: 18, color: Colors.grey[600]),
                       ),
                       SizedBox(height: 8),
                       Text(
-                        controller.news.isEmpty
-                            ? 'Click refresh to fetch news'
-                            : 'Try adjusting the date range',
+                        'Click refresh to fetch news',
                         style: TextStyle(fontSize: 14, color: Colors.grey[500]),
                       ),
                       SizedBox(height: 16),
@@ -196,12 +213,14 @@ class LiveNewsScreen extends StatelessWidget {
                   ),
                 );
               }
+
               return RefreshIndicator(
                 onRefresh: () => controller.fetchLiveNews(),
-                child: ListView.builder(
-                  itemCount: controller.news.length,
+                child: ListView.separated(
+                  itemCount: newsList.length,
+                  separatorBuilder: (context, index) => Divider(height: 1),
                   itemBuilder: (context, index) {
-                    final news = controller.news[index];
+                    final news = newsList[index];
                     return Card(
                       margin: EdgeInsets.all(8),
                       child: Padding(
@@ -510,35 +529,6 @@ class LiveNewsScreen extends StatelessWidget {
       return '${dateTime.year}/${dateTime.month.toString().padLeft(2, '0')}/${dateTime.day.toString().padLeft(2, '0')} ${dateTime.hour.toString().padLeft(2, '0')}:${dateTime.minute.toString().padLeft(2, '0')}';
     } catch (e) {
       return dateTimeStr;
-    }
-  }
-
-  Future<void> _showDateRangePicker(BuildContext context) async {
-    DateTime? pickedStartDate = await showDatePicker(
-      context: context,
-      initialDate: DateTime.now().subtract(
-        Duration(days: 7),
-      ), // Default to 7 days ago
-      firstDate: DateTime(2020),
-      lastDate: DateTime.now(),
-    );
-
-    if (pickedStartDate != null) {
-      DateTime? pickedEndDate = await showDatePicker(
-        context: context,
-        initialDate: DateTime.now(), // Default to today
-        firstDate: pickedStartDate,
-        lastDate: DateTime.now(),
-      );
-
-      if (pickedEndDate != null) {
-        String startDateStr =
-            "${pickedStartDate.year}-${pickedStartDate.month.toString().padLeft(2, '0')}-${pickedStartDate.day.toString().padLeft(2, '0')}";
-        String endDateStr =
-            "${pickedEndDate.year}-${pickedEndDate.month.toString().padLeft(2, '0')}-${pickedEndDate.day.toString().padLeft(2, '0')}";
-
-        controller.setDateRange(startDateStr, endDateStr);
-      }
     }
   }
 }

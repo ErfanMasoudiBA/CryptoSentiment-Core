@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
-import axios from 'axios';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import Sidebar from './Sidebar';
-import SentimentChart from './SentimentChart';
-import NewsTable from './NewsTable';
-import SearchBar from './SearchBar';
+import { useEffect, useState, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
+import axios from "axios";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import Sidebar from "./Sidebar";
+import SentimentChart from "./SentimentChart";
+import NewsTable from "./NewsTable";
+import SearchBar from "./SearchBar";
 
 interface Stats {
   total: number;
@@ -31,7 +31,7 @@ const PAGE_SIZE = 20;
 
 export default function DashboardContent() {
   const searchParams = useSearchParams();
-  const coinFromUrl = searchParams.get('coin') || '';
+  const coinFromUrl = searchParams.get("coin") || "";
 
   const [stats, setStats] = useState<Stats>({
     total: 0,
@@ -43,53 +43,68 @@ export default function DashboardContent() {
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [selectedCoin, setSelectedCoin] = useState<string>(coinFromUrl || 'All');
+  const [selectedCoin, setSelectedCoin] = useState<string>(
+    coinFromUrl || "All"
+  );
   const [currentPage, setCurrentPage] = useState(0);
   const [hasMore, setHasMore] = useState(true);
 
-  const fetchData = useCallback(async (coinQuery: string = '', page: number = 0, append: boolean = false) => {
-    try {
-      if (append) {
-        setLoadingMore(true);
-      } else {
-        setLoading(true);
-      }
-      setError(null);
+  const fetchData = useCallback(
+    async (
+      coinQuery: string = "",
+      page: number = 0,
+      append: boolean = false
+    ) => {
+      try {
+        if (append) {
+          setLoadingMore(true);
+        } else {
+          setLoading(true);
+        }
+        setError(null);
 
-      const statsQuery = coinQuery && coinQuery !== 'All' ? `?q=${encodeURIComponent(coinQuery)}` : '';
-      const skip = page * PAGE_SIZE;
-      const newsQuery = coinQuery && coinQuery !== 'All' 
-        ? `?q=${encodeURIComponent(coinQuery)}&skip=${skip}&limit=${PAGE_SIZE}`
-        : `?skip=${skip}&limit=${PAGE_SIZE}`;
-      
-      // Fetch stats and news in parallel
-      const [statsResponse, newsResponse] = await Promise.all([
-        axios.get<Stats>(`http://127.0.0.1:8000/api/stats${statsQuery}`),
-        axios.get<NewsItem[]>(`http://127.0.0.1:8000/api/news${newsQuery}`),
-      ]);
+        const statsQuery =
+          coinQuery && coinQuery !== "All"
+            ? `?q=${encodeURIComponent(coinQuery)}`
+            : "";
+        const skip = page * PAGE_SIZE;
+        const newsQuery =
+          coinQuery && coinQuery !== "All"
+            ? `?q=${encodeURIComponent(
+                coinQuery
+              )}&skip=${skip}&limit=${PAGE_SIZE}`
+            : `?skip=${skip}&limit=${PAGE_SIZE}`;
 
-      setStats(statsResponse.data);
-      
-      if (append) {
-        setNews(prev => [...prev, ...newsResponse.data]);
-      } else {
-        setNews(newsResponse.data);
+        // Fetch stats and news in parallel
+        const [statsResponse, newsResponse] = await Promise.all([
+          axios.get<Stats>(`http://127.0.0.1:8000/api/stats${statsQuery}`),
+          axios.get<NewsItem[]>(`http://127.0.0.1:8000/api/news${newsQuery}`),
+        ]);
+
+        setStats(statsResponse.data);
+
+        if (append) {
+          setNews((prev) => [...prev, ...newsResponse.data]);
+        } else {
+          setNews(newsResponse.data);
+        }
+
+        // Check if there are more items
+        setHasMore(newsResponse.data.length === PAGE_SIZE);
+      } catch (err) {
+        console.error("Error fetching data:", err);
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Failed to connect to the API. Make sure the backend server is running on http://127.0.0.1:8000"
+        );
+      } finally {
+        setLoading(false);
+        setLoadingMore(false);
       }
-      
-      // Check if there are more items
-      setHasMore(newsResponse.data.length === PAGE_SIZE);
-    } catch (err) {
-      console.error('Error fetching data:', err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : 'Failed to connect to the API. Make sure the backend server is running on http://127.0.0.1:8000'
-      );
-    } finally {
-      setLoading(false);
-      setLoadingMore(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   useEffect(() => {
     if (coinFromUrl) {
@@ -98,12 +113,12 @@ export default function DashboardContent() {
       fetchData(coinFromUrl, 0, false);
     } else {
       setCurrentPage(0);
-      fetchData('', 0, false);
+      fetchData("", 0, false);
     }
   }, [coinFromUrl, fetchData]);
 
   const handleSearch = (query: string) => {
-    setSelectedCoin(query || 'All');
+    setSelectedCoin(query || "All");
     setCurrentPage(0);
     fetchData(query, 0, false);
   };
@@ -111,20 +126,20 @@ export default function DashboardContent() {
   const handleLoadMore = () => {
     const nextPage = currentPage + 1;
     setCurrentPage(nextPage);
-    fetchData(selectedCoin === 'All' ? '' : selectedCoin, nextPage, true);
+    fetchData(selectedCoin === "All" ? "" : selectedCoin, nextPage, true);
   };
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    fetchData(selectedCoin === 'All' ? '' : selectedCoin, newPage, false);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    fetchData(selectedCoin === "All" ? "" : selectedCoin, newPage, false);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const getDisplayTitle = () => {
-    if (selectedCoin && selectedCoin !== 'All') {
+    if (selectedCoin && selectedCoin !== "All") {
       return `${selectedCoin} Sentiment Analysis`;
     }
-    return 'Market Sentiment Overview';
+    return "Market Sentiment Overview";
   };
 
   const totalPages = Math.ceil(news.length / PAGE_SIZE) + (hasMore ? 1 : 0);
@@ -132,9 +147,9 @@ export default function DashboardContent() {
   return (
     <div className="flex min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
       <Sidebar />
-      
-      <main className="flex-1 p-8">
-        <div className="max-w-7xl mx-auto space-y-6">
+
+      <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <div className="max-w-7xl mx-auto space-y-6 staggered-children">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
@@ -144,7 +159,7 @@ export default function DashboardContent() {
             </div>
           </div>
 
-          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 shadow-lg relative z-50">
+          <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-slate-700/50 shadow-lg relative z-50 fade-in">
             <SearchBar onSearch={handleSearch} selectedCoin={selectedCoin} />
           </div>
 
@@ -160,36 +175,42 @@ export default function DashboardContent() {
               <h3 className="text-red-400 font-semibold mb-2">Error</h3>
               <p className="text-red-300">{error}</p>
               <p className="text-red-300/70 text-sm mt-2">
-                Please ensure the FastAPI backend is running on http://127.0.0.1:8000
+                Please ensure the FastAPI backend is running on
+                http://127.0.0.1:8000
               </p>
             </div>
           ) : (
             <>
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-6">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-4 md:p-6 fade-in">
                 <SentimentChart
                   positive={stats.positive}
                   negative={stats.negative}
                   neutral={stats.neutral}
-                  coinName={selectedCoin && selectedCoin !== 'All' ? selectedCoin : undefined}
+                  coinName={
+                    selectedCoin && selectedCoin !== "All"
+                      ? selectedCoin
+                      : undefined
+                  }
                 />
               </div>
-              
+
               <NewsTable news={news} />
-              
+
               {/* Pagination Controls */}
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-6">
-                <div className="flex items-center justify-between">
+              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl border border-slate-700/50 shadow-lg p-4 md:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                   <div className="text-slate-400 text-sm">
-                    Showing {news.length} {news.length === 1 ? 'article' : 'articles'}
-                    {selectedCoin !== 'All' && ` for ${selectedCoin}`}
+                    Showing {news.length}{" "}
+                    {news.length === 1 ? "article" : "articles"}
+                    {selectedCoin !== "All" && ` for ${selectedCoin}`}
                   </div>
-                  
-                  <div className="flex items-center gap-2">
+
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
                     {hasMore && (
                       <button
                         onClick={handleLoadMore}
                         disabled={loadingMore}
-                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-800 disabled:opacity-50 text-white font-medium rounded-lg transition-colors shadow-md hover:shadow-lg flex items-center justify-center gap-2 touch-target"
                       >
                         {loadingMore ? (
                           <>
@@ -204,9 +225,11 @@ export default function DashboardContent() {
                         )}
                       </button>
                     )}
-                    
+
                     {!hasMore && news.length > 0 && (
-                      <span className="text-slate-400 text-sm">No more articles to load</span>
+                      <span className="text-slate-400 text-sm">
+                        No more articles to load
+                      </span>
                     )}
                   </div>
                 </div>
